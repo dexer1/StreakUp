@@ -1,0 +1,1 @@
+import { ProfileView } from "@/components/profile/profile-view"; import { users } from "@/data/mock-data"; export default async function PublicProfilePage({params}:{params:Promise<{username:string}>}){const {username}=await params;return <ProfileView user={users.find(u=>u.username===username)}/>}

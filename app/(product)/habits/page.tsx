@@ -1,0 +1,15 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { LayoutGrid, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/primitives";
+import { EmptyState, PageHeader } from "@/components/shared/shared";
+import { HabitCard } from "@/components/habits/habit-card";
+import { HabitFormDialog } from "@/components/habits/habit-form";
+import { useAppStore } from "@/store/app-store";
+import type { Habit } from "@/types";
+import { cn } from "@/lib/utils";
+
+const categories=["All","Health","Learning","Fitness","Mindfulness","Productivity","Other"] as const;
+export default function HabitsPage(){const habits=useAppStore(s=>s.habits);const [status,setStatus]=useState<"All"|"Active"|"Archived">("Active");const [category,setCategory]=useState<(typeof categories)[number]>("All");const [search,setSearch]=useState("");const [open,setOpen]=useState(false);const [editing,setEditing]=useState<Habit|undefined>();const visible=useMemo(()=>habits.filter(h=>(status==="All"||(status==="Active"?!h.archived:h.archived))&&(category==="All"||h.category===category)&&h.title.toLowerCase().includes(search.toLowerCase())),[habits,status,category,search]);const edit=(h:Habit)=>{setEditing(h);setOpen(true)};return <div className="page-wrap"><PageHeader title="My Habits" description="Design the routines that make good days repeatable." action={<Button onClick={()=>{setEditing(undefined);setOpen(true)}}><Plus className="h-4 w-4"/>New Habit</Button>}/><div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"><div className="flex rounded-xl border border-border bg-surface p-1">{(["All","Active","Archived"] as const).map(item=><button key={item} onClick={()=>setStatus(item)} className={cn("rounded-lg px-4 py-2 text-sm font-semibold",status===item?"bg-foreground text-background":"text-muted hover:text-foreground")}>{item}</button>)}</div><div className="flex flex-1 flex-col gap-3 sm:flex-row lg:max-w-3xl"><div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-muted"/><Input value={search} onChange={e=>setSearch(e.target.value)} className="pl-9" placeholder="Search habits" aria-label="Search habits"/></div><div className="scrollbar-none flex gap-2 overflow-x-auto pb-1">{categories.map(item=><button key={item} onClick={()=>setCategory(item)} className={cn("whitespace-nowrap rounded-lg border px-3 py-2 text-xs font-semibold",category===item?"border-primary bg-primary-soft text-primary":"bg-surface text-muted")}>{item}</button>)}</div></div></div>{visible.length?<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{visible.map(h=><HabitCard key={h.id} habit={h} onEdit={edit}/>)}</div>:<EmptyState icon={LayoutGrid} title="Start building your first streak." description="Create a habit that feels achievable today and meaningful over time." action={<Button onClick={()=>setOpen(true)}><Plus className="h-4 w-4"/>Create Habit</Button>}/>}<HabitFormDialog open={open} onOpenChange={setOpen} habit={editing}/></div>}
