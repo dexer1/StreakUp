@@ -19,6 +19,16 @@ npm install
 npm run dev
 ```
 
-Use `npm test` for the production build and route smoke suite, `npm run lint` for code quality, and `npx tsc --noEmit` for strict TypeScript validation.
+Use `npm run verify` to run strict TypeScript validation, lint, project checks, and the same native Next.js production build used by Vercel.
 
 The prototype stores mutable demo state in browser storage. The service layer under `services/` is intentionally isolated so a REST API, Server Actions, Supabase, or another backend can replace the mock implementation without rewriting page UI.
+
+## Deploy to Vercel
+
+1. Push the repository to GitHub, GitLab, or Bitbucket.
+2. Import it from the Vercel dashboard.
+3. Keep the detected framework as **Next.js** and the root directory as `./`.
+4. No environment variables are required for the current demo frontend. Optionally set `NEXT_PUBLIC_APP_URL` to your canonical custom domain for social metadata.
+5. Deploy. Future backend or authentication credentials should be added through Vercel Project Settings, never committed to the repository.
+
+The project pins Node.js `22.x` and includes a minimal `vercel.json`, while build and output settings remain on Vercel's native Next.js defaults.
