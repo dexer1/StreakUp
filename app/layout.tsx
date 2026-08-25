@@ -2,12 +2,31 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const deploymentHost = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? (deploymentHost ? `https://${deploymentHost}` : "http://localhost:3000");
 const description = "Turn daily habits into visible momentum with streaks, focus sessions, challenges, and a supportive community.";
 
+function resolveMetadataBase(): URL {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+  ];
+
+  for (const candidate of candidates) {
+    const value = candidate?.trim();
+    if (!value) continue;
+
+    try {
+      return new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    } catch {
+      // Ignore malformed optional configuration and try the next Vercel URL.
+    }
+  }
+
+  return new URL("http://localhost:3000");
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: resolveMetadataBase(),
   title: { default: "StreakUp — Build habits that stick", template: "%s · StreakUp" },
   description,
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
