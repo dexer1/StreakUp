@@ -1,2 +1,7 @@
 import { AppShell } from "@/components/layout/app-shell";
-export default function ProductLayout({children}:{children:React.ReactNode}) { return <AppShell>{children}</AppShell>; }
+import { auth } from "@/auth";
+
+export default async function ProductLayout({children}:{children:React.ReactNode}) {
+  const session = await auth();
+  return <AppShell viewer={session?.user}>{children}</AppShell>;
+}

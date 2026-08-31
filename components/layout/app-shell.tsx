@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronLeft, Command, Focus, Home, LayoutGrid, Menu, Medal, Moon, Settings, Sun, Trophy, Users, Zap } from "lucide-react";
+import { Bell, ChevronLeft, Command, Focus, Home, LayoutGrid, LogOut, Menu, Medal, Moon, Settings, Sun, Trophy, Users, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/app-store";
 import { currentUser } from "@/data/mock-data";
@@ -10,22 +10,25 @@ import { AppTooltip, DropdownContent, DropdownItem, DropdownMenu, DropdownPortal
 import { BrandMark, UserAvatar, XPBar } from "@/components/shared/shared";
 import { Button } from "@/components/ui/button";
 import { CommandMenu } from "./command-menu";
+import { signOutUser } from "@/app/actions/auth";
 
 const nav = [
   { href: "/dashboard", label: "Home", icon: Home }, { href: "/habits", label: "My Habits", icon: LayoutGrid }, { href: "/focus", label: "Focus", icon: Focus }, { href: "/challenges", label: "Challenges", icon: Trophy }, { href: "/leaderboard", label: "Leaderboard", icon: Medal }, { href: "/community", label: "Community", icon: Users }, { href: "/achievements", label: "Achievements", icon: Zap },
 ];
 const utilityNav = [{ href: "/notifications", label: "Notifications", icon: Bell }, { href: "/settings", label: "Settings", icon: Settings }];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, viewer }: { children: React.ReactNode; viewer?: { name?: string | null; email?: string | null } }) {
   const pathname = usePathname(); const collapsed = useAppStore((s)=>s.sidebarCollapsed); const setCollapsed = useAppStore((s)=>s.setSidebarCollapsed); const setCommandOpen = useAppStore((s)=>s.setCommandOpen); const notifications = useAppStore((s)=>s.notifications); const markRead = useAppStore((s)=>s.markNotificationRead); const theme = useAppStore((s)=>s.theme); const setTheme = useAppStore((s)=>s.setTheme);
   const unread = notifications.filter((n)=>!n.read).length;
+  const viewerName = viewer?.name?.trim() || currentUser.name;
+  const shellUser = { ...currentUser, name: viewerName, initials: viewerName.split(/\s+/).slice(0, 2).map((part)=>part[0]).join("").toUpperCase() };
   const item = (entry: typeof nav[number]) => { const active = pathname === entry.href || (entry.href !== "/dashboard" && pathname.startsWith(entry.href)); const content = <Link href={entry.href} aria-current={active ? "page" : undefined} className={cn("flex h-10 items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition", active ? "bg-white/12 text-white" : "text-[var(--sidebar-muted)] hover:bg-white/7 hover:text-white", collapsed && "justify-center px-0")}><entry.icon className="h-[18px] w-[18px] shrink-0" />{!collapsed && <span>{entry.label}</span>}{entry.label === "Notifications" && unread > 0 && !collapsed && <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white">{unread}</span>}</Link>; return collapsed ? <AppTooltip key={entry.href} label={entry.label}>{content}</AppTooltip> : <div key={entry.href}>{content}</div>; };
   return <div className="min-h-dvh bg-background">
     <aside className={cn("fixed inset-y-0 left-0 z-40 hidden flex-col bg-sidebar p-3 transition-[width] duration-200 md:flex", collapsed ? "w-[76px]" : "w-[248px]")}>
       <div className={cn("flex h-14 items-center px-2", collapsed ? "justify-center" : "justify-between")}><BrandMark compact={collapsed} dark /><button onClick={()=>setCollapsed(!collapsed)} className={cn("rounded-lg p-2 text-[var(--sidebar-muted)] hover:bg-white/10 hover:text-white", collapsed && "absolute -right-3 top-6 border border-white/10 bg-sidebar")} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}><ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} /></button></div>
       <button onClick={()=>setCommandOpen(true)} className={cn("my-3 flex h-10 items-center gap-3 rounded-[10px] border border-white/10 bg-white/5 px-3 text-sm text-[var(--sidebar-muted)] hover:bg-white/10", collapsed && "justify-center px-0")}><Command className="h-4 w-4" />{!collapsed && <><span>Search</span><kbd className="ml-auto rounded bg-white/10 px-1.5 py-0.5 text-[10px]">⌘K</kbd></>}</button>
       <nav aria-label="Primary" className="space-y-1">{nav.map(item)}</nav><div className="mt-auto space-y-1">{utilityNav.map(item)}
-        <div className={cn("mt-3 border-t border-white/10 pt-3", collapsed ? "flex justify-center" : "p-2")}><Link href="/profile" className="flex items-center gap-3"><UserAvatar user={currentUser} size="sm" />{!collapsed && <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold text-white">{currentUser.name}</div><div className="text-[11px] text-[var(--sidebar-muted)]">Level 8 · 550 XP to go</div></div>}</Link>{!collapsed && <div className="mt-3"><XPBar xp={currentUser.xp} next={currentUser.nextLevelXp} level={currentUser.level} compact /></div>}</div>
+        <div className={cn("mt-3 border-t border-white/10 pt-3", collapsed ? "flex flex-col items-center gap-2" : "p-2")}><Link href="/profile" className="flex min-w-0 items-center gap-3"><UserAvatar user={shellUser} size="sm" />{!collapsed && <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold text-white">{viewerName}</div><div className="truncate text-[11px] text-[var(--sidebar-muted)]">{viewer?.email || "Level 8 · 550 XP to go"}</div></div>}</Link>{!collapsed && <div className="mt-3"><XPBar xp={currentUser.xp} next={currentUser.nextLevelXp} level={currentUser.level} compact /></div>}<form action={signOutUser} className={cn(!collapsed && "mt-3")}><button type="submit" className={cn("flex items-center justify-center rounded-lg text-[var(--sidebar-muted)] hover:bg-white/10 hover:text-white", collapsed ? "h-9 w-9" : "h-9 w-full gap-2 text-xs font-semibold")} aria-label="Sign out"><LogOut className="h-4 w-4"/>{!collapsed && "Sign out"}</button></form></div>
       </div>
     </aside>
     <div className={cn("min-h-dvh transition-[padding] duration-200", collapsed ? "md:pl-[76px]" : "md:pl-[248px]")}>

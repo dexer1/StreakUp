@@ -1,4 +1,29 @@
-"use client";
+import Link from "next/link";
+import { AuthShell, SocialButtons } from "@/components/auth/auth-shell";
 
-import Link from "next/link";import {useRouter} from "next/navigation";import {Button} from "@/components/ui/button";import {Input,Label} from "@/components/ui/primitives";import {AuthDivider,AuthShell,SocialButtons} from "@/components/auth/auth-shell";
-export default function LoginPage(){const router=useRouter();return <AuthShell eyebrow="Welcome back" title="Keep your streak moving." description="Sign in to see what today needs from you."><SocialButtons/><AuthDivider/><form className="space-y-4" onSubmit={e=>{e.preventDefault();router.push("/dashboard")}}><div><Label htmlFor="email">Email</Label><Input id="email" type="email" defaultValue="alex@example.com" required/></div><div><div className="flex justify-between"><Label htmlFor="password">Password</Label><Link className="text-xs font-semibold text-primary" href="/forgot-password">Forgot password?</Link></div><Input id="password" type="password" defaultValue="streakupdemo" required minLength={8}/></div><Button className="w-full" size="lg">Sign In</Button></form><p className="mt-6 text-center text-sm text-muted">New to StreakUp? <Link href="/signup" className="font-semibold text-primary">Create an account</Link></p></AuthShell>}
+function redirectPath(value?: string) {
+  if (!value) return "/dashboard";
+  if (value.startsWith("/") && !value.startsWith("//")) return value;
+
+  try {
+    const url = new URL(value);
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/dashboard";
+  }
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+}) {
+  const { callbackUrl, error } = await searchParams;
+
+  return <AuthShell eyebrow="Welcome back" title="Keep your streak moving." description="Sign in to see what today needs from you.">
+    {error && <div role="alert" className="mb-4 rounded-[10px] border border-danger/30 bg-danger/5 px-3 py-2.5 text-sm text-danger">Google sign-in could not be completed. Please try again.</div>}
+    <SocialButtons redirectTo={redirectPath(callbackUrl)}/>
+    <p className="mt-4 text-center text-xs text-muted">Google is currently the supported sign-in method.</p>
+    <p className="mt-6 text-center text-sm text-muted">New to StreakUp? <Link href="/signup" className="font-semibold text-primary">Create an account</Link></p>
+  </AuthShell>;
+}

@@ -52,7 +52,7 @@ export const initialActivities: Activity[] = activitySeeds.map((a, i) => ({ id: 
 export const initialNotifications: AppNotification[] = [
   { id: "n1", type: "streak", message: "Your Reading streak expires in 3 hours.", createdAt: new Date(Date.now() - 8 * 60000).toISOString(), read: false },
   { id: "n2", type: "challenge", message: "Sarah passed you in Code Every Day.", createdAt: new Date(Date.now() - 34 * 60000).toISOString(), read: false },
-  { id: "n3", type: "social", message: "Mike reacted 🔥 to your 14-day run streak.", createdAt: new Date(Date.now() - 75 * 60000).toISOString(), read: false },
+  { id: "n3", type: "social", message: "Mike sent a Fire reaction to your 14-day run streak.", createdAt: new Date(Date.now() - 75 * 60000).toISOString(), read: false },
   { id: "n4", type: "achievement", message: "You unlocked ‘On Fire’ and earned 100 XP.", createdAt: new Date(Date.now() - 3 * 3600000).toISOString(), read: false },
   { id: "n5", type: "friend", message: "Emma joined your Deep Work challenge.", createdAt: new Date(Date.now() - 7 * 3600000).toISOString(), read: true },
   { id: "n6", type: "challenge", message: "No Sugar Week starts today.", createdAt: new Date(Date.now() - 15 * 3600000).toISOString(), read: true },
